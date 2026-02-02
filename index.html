@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Forex Pro Calculator</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #0a0e27;
+  --bg-secondary: #151932;
+  --bg-card: #1a1f3a;
+  --accent-bull: #00ff88;
+  --accent-bear: #ff3366;
+  --accent-primary: #4da6ff;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8b92b0;
+  --border: #2d3350;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 12px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-bull));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.card.full {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.position-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.position-btn {
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.position-btn.active.long {
+  background: linear-gradient(135deg, var(--accent-bull), #00cc6f);
+  border-color: var(--accent-bull);
+  color: var(--bg-primary);
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.position-btn.active.short {
+  background: linear-gradient(135deg, var(--accent-bear), #ff1a4d);
+  border-color: var(--accent-bear);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 51, 102, 0.3);
+}
+
+.input-group {
+  margin-bottom: 0;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.1);
+}
+
+.input-prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.input-wrapper input.has-prefix {
+  padding-left: 30px;
+}
+
+.ratio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.ratio-btn {
+  padding: 10px 6px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.ratio-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 3px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.mode-btn {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn.active {
+  background: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.price-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.price-box {
+  background: var(--bg-secondary);
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  text-align: center;
+}
+
+.price-box.tp {
+  border-left: 3px solid var(--accent-bull);
+}
+
+.price-box.sl {
+  border-left: 3px solid var(--accent-bear);
+}
+
+.price-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.price-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-family: 'Inter', monospace;
+  line-height: 1.1;
+}
+
+.price-value.profit-color {
+  color: var(--accent-bull);
+}
+
+.price-value.loss-color {
+  color: var(--accent-bear);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.result-box {
+  background: var(--bg-secondary);
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  text-align: center;
+}
+
+.result-box.profit {
+  border-left: 3px solid var(--accent-bull);
+}
+
+.result-box.loss {
+  border-left: 3px solid var(--accent-bear);
+}
+
+.result-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.result-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-family: 'Inter', monospace;
+  line-height: 1.2;
+}
+
+.result-value.profit-color {
+  color: var(--accent-bull);
+}
+
+.result-value.loss-color {
+  color: var(--accent-bear);
+}
+
+.info-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+@media (max-width: 500px) {
+  body {
+    padding: 8px;
+  }
+  
+  .header {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .main-grid {
+    gap: 10px;
+  }
+  
+  .card {
+    padding: 12px;
+  }
+}
+
+@media (max-height: 800px) {
+  .header {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .main-grid {
+    gap: 10px;
+  }
+  
+  .card {
+    padding: 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>⚡ FOREX PRO</h1>
+    <p>Position Size & Risk Calculator</p>
+  </div>
+
+  <div class="main-grid">
+    
+    <!-- Dirección -->
+    <div class="card full">
+      <div class="section-title">Dirección</div>
+      <div class="position-toggle">
+        <div class="position-btn active long" data-direction="long">📈 LONG</div>
+        <div class="position-btn short" data-direction="short">📉 SHORT</div>
+      </div>
+    </div>
+
+    <!-- Precio entrada -->
+    <div class="card">
+      <div class="input-group">
+        <label>Precio Entrada</label>
+        <div class="input-wrapper">
+          <input type="number" id="entryPrice" step="0.00001" value="1.18599">
+        </div>
+      </div>
+    </div>
+
+    <!-- Stop Loss -->
+    <div class="card">
+      <div class="input-group">
+        <label>Stop Loss (pips)</label>
+        <div class="input-wrapper">
+          <input type="number" id="slPips" step="0.1" value="10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Risk/Reward -->
+    <div class="card full">
+      <div class="section-title">Ratio R:R</div>
+      <div class="ratio-grid">
+        <div class="ratio-btn" data-ratio="1">1:1</div>
+        <div class="ratio-btn active" data-ratio="2">1:2</div>
+        <div class="ratio-btn" data-ratio="3">1:3</div>
+        <div class="ratio-btn" data-ratio="5">1:5</div>
+      </div>
+    </div>
+
+    <!-- Modo cálculo -->
+    <div class="card full">
+      <div class="section-title">Modo Cálculo</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="auto">Por Riesgo ($)</button>
+        <button class="mode-btn" data-mode="manual">Por Lotes</button>
+      </div>
+
+      <div id="autoMode" class="input-group">
+        <label>Riesgo Máximo</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">$</span>
+          <input type="number" id="riskUSD" class="has-prefix" step="0.01" value="10">
+        </div>
+      </div>
+
+      <div id="manualMode" class="input-group" style="display: none;">
+        <label>Tamaño Lote</label>
+        <div class="input-wrapper">
+          <input type="number" id="manualLot" step="0.01" value="0.10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Precios Objetivo -->
+    <div class="card full">
+      <div class="section-title">Precios Objetivo</div>
+      <div class="price-row">
+        <div class="price-box tp">
+          <div class="price-label">🎯 TAKE PROFIT</div>
+          <div class="price-value profit-color" id="tpPrice">0.00000</div>
+          <div class="info-badge"><span id="tpPips">0</span> pips</div>
+        </div>
+        <div class="price-box sl">
+          <div class="price-label">🛑 STOP LOSS</div>
+          <div class="price-value loss-color" id="slPrice">0.00000</div>
+          <div class="info-badge"><span id="slPipsDisplay">0</span> pips</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="card full">
+      <div class="section-title">Resultados</div>
+      <div class="results-grid">
+        <div class="result-box profit">
+          <div class="result-label">💰 Ganancia</div>
+          <div class="result-value profit-color" id="profitUSD">$0.00</div>
+        </div>
+        <div class="result-box loss">
+          <div class="result-label">⚠️ Pérdida</div>
+          <div class="result-value loss-color" id="lossUSD">$0.00</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">📊 Lotes</div>
+          <div class="result-value" id="lotSize">0.00</div>
+        </div>
+        <div class="result-box">
+          <div class="result-label">💵 Margen</div>
+          <div class="result-value" id="margin">$0.00</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// Configuración
+let direction = 'long';
+let rrRatio = 2;
+let calculationMode = 'auto';
+
+const PIP_SIZE = 0.0001;
+const PIP_VALUE = 10; // Para lote estándar en pares EUR/USD
+
+// Referencias DOM
+const elements = {
+  entryPrice: document.getElementById('entryPrice'),
+  slPips: document.getElementById('slPips'),
+  riskUSD: document.getElementById('riskUSD'),
+  manualLot: document.getElementById('manualLot'),
+  
+  tpPrice: document.getElementById('tpPrice'),
+  slPrice: document.getElementById('slPrice'),
+  tpPips: document.getElementById('tpPips'),
+  slPipsDisplay: document.getElementById('slPipsDisplay'),
+  profitUSD: document.getElementById('profitUSD'),
+  lossUSD: document.getElementById('lossUSD'),
+  lotSize: document.getElementById('lotSize'),
+  margin: document.getElementById('margin'),
+  
+  autoMode: document.getElementById('autoMode'),
+  manualMode: document.getElementById('manualMode')
+};
+
+// Event Listeners - Dirección
+document.querySelectorAll('.position-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    direction = this.dataset.direction;
+    calculate();
+  });
+});
+
+// Event Listeners - Ratio R:R
+document.querySelectorAll('.ratio-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    rrRatio = parseFloat(this.dataset.ratio);
+    calculate();
+  });
+});
+
+// Event Listeners - Modo de cálculo
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    calculationMode = this.dataset.mode;
+    
+    if (calculationMode === 'auto') {
+      elements.autoMode.style.display = 'block';
+      elements.manualMode.style.display = 'none';
+    } else {
+      elements.autoMode.style.display = 'none';
+      elements.manualMode.style.display = 'block';
+    }
+    calculate();
+  });
+});
+
+// Event Listeners - Inputs
+[elements.entryPrice, elements.slPips, elements.riskUSD, elements.manualLot].forEach(input => {
+  input.addEventListener('input', calculate);
+});
+
+// Función principal de cálculo
+function calculate() {
+  const entry = parseFloat(elements.entryPrice.value);
+  const slPips = parseFloat(elements.slPips.value);
+  
+  if (!entry || !slPips || !rrRatio || slPips <= 0) {
+    return;
+  }
+
+  let lotSize, riskAmount;
+
+  // Calcular tamaño del lote según el modo
+  if (calculationMode === 'auto') {
+    riskAmount = parseFloat(elements.riskUSD.value);
+    if (!riskAmount || riskAmount <= 0) return;
+    
+    // Fórmula: Lote = Riesgo $ / (Pips SL * Valor por pip por lote)
+    lotSize = riskAmount / (slPips * PIP_VALUE);
+    
+  } else {
+    lotSize = parseFloat(elements.manualLot.value);
+    if (!lotSize || lotSize <= 0) return;
+    
+    // Calcular riesgo basado en el lote
+    riskAmount = lotSize * slPips * PIP_VALUE;
+  }
+
+  // Calcular distancia del SL en precio
+  const slDistance = slPips * PIP_SIZE;
+  
+  // Calcular precios de SL y TP
+  let slPrice, tpPrice;
+  const tpPips = slPips * rrRatio;
+  const tpDistance = tpPips * PIP_SIZE;
+  
+  if (direction === 'long') {
+    slPrice = entry - slDistance;
+    tpPrice = entry + tpDistance;
+  } else {
+    slPrice = entry + slDistance;
+    tpPrice = entry - tpDistance;
+  }
+
+  // Calcular ganancia potencial
+  const profitAmount = riskAmount * rrRatio;
+
+  // Calcular unidades (1 lote estándar = 100,000 unidades)
+  const units = lotSize * 100000;
+
+  // Calcular exposición total
+  const exposure = units * entry;
+
+  // Calcular margen requerido (asumiendo apalancamiento 1:100)
+  const leverage = 100;
+  const margin = exposure / leverage;
+
+  // Actualizar interfaz
+  elements.slPrice.textContent = slPrice.toFixed(5);
+  elements.tpPrice.textContent = tpPrice.toFixed(5);
+  elements.slPipsDisplay.textContent = slPips.toFixed(1);
+  elements.tpPips.textContent = tpPips.toFixed(1);
+  elements.profitUSD.textContent = '$' + profitAmount.toFixed(2);
+  elements.lossUSD.textContent = '$' + riskAmount.toFixed(2);
+  elements.lotSize.textContent = lotSize.toFixed(2);
+  elements.margin.textContent = '$' + margin.toFixed(2);
+}
+
+// Calcular al cargar
+calculate();
+</script>
+
+</body>
+</html>
