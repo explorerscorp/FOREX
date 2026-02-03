@@ -180,7 +180,7 @@ body {
 
 .ratio-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr) 1.2fr;
   gap: 6px;
 }
 
@@ -198,6 +198,35 @@ body {
 }
 
 .ratio-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--bg-primary);
+}
+
+.ratio-input-wrapper {
+  position: relative;
+}
+
+.ratio-input-wrapper input {
+  width: 100%;
+  padding: 10px 8px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.ratio-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.1);
+}
+
+.ratio-input-wrapper input.active {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: var(--bg-primary);
@@ -333,6 +362,16 @@ body {
   margin-top: 4px;
 }
 
+/* Animación para cambios de valores */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.updating {
+  animation: pulse 0.3s ease;
+}
+
 @media (max-width: 500px) {
   body {
     padding: 8px;
@@ -398,7 +437,7 @@ body {
       <div class="input-group">
         <label>Precio Entrada</label>
         <div class="input-wrapper">
-          <input type="number" id="entryPrice" step="0.00001" value="">
+          <input type="number" id="entryPrice" step="0.00001" value="" placeholder="1.08500">
         </div>
       </div>
     </div>
@@ -408,7 +447,7 @@ body {
       <div class="input-group">
         <label>Stop Loss (pips)</label>
         <div class="input-wrapper">
-          <input type="number" id="slPips" step="0.1" value="10">
+          <input type="number" id="slPips" step="0.1" value="10" min="0.1">
         </div>
       </div>
     </div>
@@ -420,7 +459,9 @@ body {
         <div class="ratio-btn" data-ratio="1">1:1</div>
         <div class="ratio-btn active" data-ratio="2">1:2</div>
         <div class="ratio-btn" data-ratio="3">1:3</div>
-        <div class="ratio-btn" data-ratio="5">1:5</div>
+        <div class="ratio-input-wrapper">
+          <input type="number" id="customRatio" step="0.1" value="" placeholder="1:X" min="0.1">
+        </div>
       </div>
     </div>
 
@@ -436,14 +477,14 @@ body {
         <label>Riesgo Máximo</label>
         <div class="input-wrapper">
           <span class="input-prefix">$</span>
-          <input type="number" id="riskUSD" class="has-prefix" step="0.01" value="10">
+          <input type="number" id="riskUSD" class="has-prefix" step="0.01" value="10" min="0.01">
         </div>
       </div>
 
       <div id="manualMode" class="input-group" style="display: none;">
         <label>Tamaño Lote</label>
         <div class="input-wrapper">
-          <input type="number" id="manualLot" step="0.01" value="0.10">
+          <input type="number" id="manualLot" step="0.01" value="0.10" min="0.01">
         </div>
       </div>
     </div>
@@ -507,6 +548,7 @@ const elements = {
   slPips: document.getElementById('slPips'),
   riskUSD: document.getElementById('riskUSD'),
   manualLot: document.getElementById('manualLot'),
+  customRatio: document.getElementById('customRatio'),
   
   tpPrice: document.getElementById('tpPrice'),
   slPrice: document.getElementById('slPrice'),
@@ -531,14 +573,35 @@ document.querySelectorAll('.position-btn').forEach(btn => {
   });
 });
 
-// Event Listeners - Ratio R:R
+// Event Listeners - Ratio R:R (botones predefinidos)
 document.querySelectorAll('.ratio-btn').forEach(btn => {
   btn.addEventListener('click', function() {
     document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
     rrRatio = parseFloat(this.dataset.ratio);
+    elements.customRatio.value = '';
+    elements.customRatio.classList.remove('active');
     calculate();
   });
+});
+
+// Event Listener - Ratio R:R personalizado
+elements.customRatio.addEventListener('input', function() {
+  const customValue = parseFloat(this.value);
+  if (customValue && customValue > 0) {
+    // Desactivar botones predefinidos
+    document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    rrRatio = customValue;
+    calculate();
+  } else {
+    this.classList.remove('active');
+  }
+});
+
+elements.customRatio.addEventListener('focus', function() {
+  // Desactivar botones predefinidos al enfocar el input personalizado
+  document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
 });
 
 // Event Listeners - Modo de cálculo
@@ -620,16 +683,34 @@ function calculate() {
   const leverage = 100;
   const margin = exposure / leverage;
 
-  // Actualizar interfaz
-  elements.slPrice.textContent = slPrice.toFixed(5);
-  elements.tpPrice.textContent = tpPrice.toFixed(5);
-  elements.slPipsDisplay.textContent = slPips.toFixed(1);
-  elements.tpPips.textContent = tpPips.toFixed(1);
-  elements.profitUSD.textContent = '$' + profitAmount.toFixed(2);
-  elements.lossUSD.textContent = '$' + riskAmount.toFixed(2);
-  elements.lotSize.textContent = lotSize.toFixed(2);
-  elements.margin.textContent = '$' + margin.toFixed(2);
+  // Actualizar interfaz con animación
+  updateValueWithAnimation(elements.slPrice, slPrice.toFixed(5));
+  updateValueWithAnimation(elements.tpPrice, tpPrice.toFixed(5));
+  updateValueWithAnimation(elements.slPipsDisplay, slPips.toFixed(1));
+  updateValueWithAnimation(elements.tpPips, tpPips.toFixed(1));
+  updateValueWithAnimation(elements.profitUSD, '$' + profitAmount.toFixed(2));
+  updateValueWithAnimation(elements.lossUSD, '$' + riskAmount.toFixed(2));
+  updateValueWithAnimation(elements.lotSize, lotSize.toFixed(2));
+  updateValueWithAnimation(elements.margin, '$' + margin.toFixed(2));
 }
+
+// Función para actualizar valores con animación
+function updateValueWithAnimation(element, newValue) {
+  if (element.textContent !== newValue) {
+    element.classList.add('updating');
+    element.textContent = newValue;
+    setTimeout(() => element.classList.remove('updating'), 300);
+  }
+}
+
+// Prevenir valores negativos en inputs
+[elements.slPips, elements.riskUSD, elements.manualLot, elements.customRatio].forEach(input => {
+  input.addEventListener('keydown', function(e) {
+    if (e.key === '-' || e.key === 'e') {
+      e.preventDefault();
+    }
+  });
+});
 
 // Calcular al cargar
 calculate();
